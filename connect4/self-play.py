@@ -1,13 +1,13 @@
-
+import numpy as np
 class selfplay():
-    def __init__(self,game,nnet,cput,num,batch):
+    def __init__(self,game,nn,cput,num,batch):
         self.game=game
-        self.nnet=nnet
+        self.nn=nn
         self.cput=cput
         self.num=num
         self.batch=batch
         #self.pnet=self.nnet.__class__(self.game)
-        self.mcts=mcts(self.game,self.nnet,self.cput,self.num)
+        self.mcts=self.mcts(self.game,self.nn,self.cput,self.num)
         self.examples = []
         
     def play(self):
@@ -20,17 +20,20 @@ class selfplay():
                 if pi[a]>best:
                     best=pi[a]
                     best_act=a 
-            examples.append([self.game.state,self.game.player,pi,None])
+            examples.append([self.game.state,self.game.player,pi])
             r = self.game.end(self.game.state,self.game.player)
             if r!=-2:
-                return [(x[0],x[2],(r if x[1]==self.game.player else (-r))) for x in examples]
+                return [[x[0]*x[1] for x in examples], [r*self.game.player*x[1] for x in examples], [x[2] for x in examples]] 
             self.game.play(best_act)
     
     def learn(self):
-        trainingexamples = []
+        X, Y1, Y2 = []
         for _ in range(self.batch):
-            trainingexamples+=self.play()
-            game.state=np.zeros((6,7))
-            game.player=1
-        nn.train(trainingexamples)
-        nn.contender_vs_champion()
+            x,y1,y2=self.play()
+            X+=x
+            Y1+=y1
+            Y2+=y2
+            self.game.state=np.zeros((6,7))
+            self.game.player=1
+        self.nn.train(X,Y1,Y2)
+        self.nn.contender_vs_champion()

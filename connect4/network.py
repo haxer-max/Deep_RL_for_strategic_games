@@ -113,7 +113,7 @@ class Network():
         Y2 = Y2[indices]
         return X, [Y1,Y2]
 
-    def train(self, data,Epochs=3, Batch=64):        
-        X,Y=self.preprocess(data)
+    def train(self, X,Y1,Y2,Epochs=3, Batch=64):        
+        X,Y=self.preprocess(X, Y1, Y2)
         self.model.fit(X, Y, batch_size=Batch, epochs=Epochs)
         pass
