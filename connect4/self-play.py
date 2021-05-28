@@ -1,6 +1,10 @@
 import numpy as np
+import random
+
+from tensorflow.python.keras.backend_config import epsilon
 class selfplay():
-    def __init__(self,game,nn,cput,num,batch):
+    def __init__(self,game,nn,cput,num,batch, epsilon):
+        self.epsilon=epsilon
         self.game=game
         self.nn=nn
         self.cput=cput
@@ -14,12 +18,16 @@ class selfplay():
         examples = []
         while True:
             pi = self.mcts.getprobs()
-            best=-float('inf')
             best_act=-1
-            for a in range(len(pi)):
-                if pi[a]>best:
-                    best=pi[a]
-                    best_act=a 
+            if self.epsilon <random.uniform(0, 1):
+                best=-float('inf')
+                for a in range(len(pi)):
+                    if pi[a]>best:
+                        best=pi[a]
+                        best_act=a 
+            else:
+                best_act=random.randint(0,5)
+
             examples.append([self.game.state,self.game.player,pi])
             r = self.game.end(self.game.state,self.game.player)
             if r!=-2:
