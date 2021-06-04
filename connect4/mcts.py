@@ -70,7 +70,7 @@ class mcts():
         return v
     
     def getprobs(self):
-        for i in range(num):
+        for i in range(self.num):
             self.search(self.game.state,self.game.player)
         
         s = self.game.state.tobytes()

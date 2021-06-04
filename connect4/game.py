@@ -5,7 +5,7 @@ class Game():
     def __init__(self,state=np.zeros((6,7)),player=1):
         self.state = deepcopy(state)
         self.player = player
-        self.top = self.gettop(state)        
+        #self.top = self.gettop(state)        
         pass
     
     def gettop(self,state):
@@ -31,8 +31,7 @@ class Game():
         return state, -player
     
     def play(self,action):
-        self.state[self.top[action],action]=self.player
-        self.top[action]+=1
+        self.state[self.gettop(self.state)[action],action]=self.player
         self.player*=-1
         pass
     
