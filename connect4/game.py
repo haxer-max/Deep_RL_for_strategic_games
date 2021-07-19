@@ -51,7 +51,7 @@ class Game():
                     return 1
 
         for i in range(7):
-            for j in range(2):
+            for j in range(3):
                 if state[j][i]==tok and state[j+1][i]==tok and state[j+2][i]==tok and state[j+3][i]==tok:
                     return 1
 
@@ -69,13 +69,16 @@ class Game():
                 if state[j][i]==tok and state[j-1][i+1]==tok and state[j-2][i+2]==tok and state[j-3][i+3]==tok:
                     return -1   
         for i in range(7):
-            for j in range(2):
+            for j in range(3):
                 if state[j][i]==tok and state[j+1][i]==tok and state[j+2][i]==tok and state[j+3][i]==tok:
                     return -1
 
         if min(self.gettop(state))==6:
             return 0
         return -2
+    
+    def fstategen(self,state,player):
+        return (state*player)
     
     def stringrep(self,state):
         return state.tobytes()

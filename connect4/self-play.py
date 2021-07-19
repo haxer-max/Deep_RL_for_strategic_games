@@ -1,42 +1,38 @@
 import numpy as np
 import random
 from copy import deepcopy
-from mcts import mcts
+
+#from tensorflow.python.keras.backend_config import epsilon
 class selfplay():
-    def __init__(self,game,nn,cput,num,batch, epsilon):
-        self.epsilon=epsilon
-        self.game=game
-        self.nn=nn
-        self.cput=cput
-        self.num=num
-        self.batch=batch
-        #self.pnet=self.nnet.__class__(self.game)
-        self.mcts=mcts(self.game,self.nn,self.cput,self.num)
-        self.examples = []
+    def __init__(self):
+        pass
         
-    def play(self, toprint):
+    def play(self,toprint):
         examples = []
+        self.game.state=np.zeros((6,7))
+        self.game.player=1
+        self.mcts=Mcts(self.game,self.nn,self.cput,self.num)
         while True:
+            #self.mcts=Mcts(self.game,self.nn,self.cput,self.num)
+            
             if toprint:
+                print("""
+                ##########################################
+                ##########################################
+                """)
                 self.game.PrintBoard(self.game.state)
                 print("")
-            pi = self.mcts.getprobs()
-            best_act=-1
-            if self.epsilon <random.uniform(0, 1):
-                best=-float('inf')
-                for a in range(len(pi)):
-                    if pi[a]>best:
-                        best=pi[a]
-                        best_act=a 
-            else:
-                valid=self.game.ValidMoves(self.game.state, self.game.player)
-                valid2=[]
-                for i in range(6):
-                    if valid[i]==1:
-                        valid2.append(i)
-                best_act=valid2[random.randint(0,len(valid2)-1)]
+            
+            fstate = self.game.fstategen(self.game.state,self.game.player)
+            pi = np.array(self.mcts.getprobs(deepcopy(fstate)))
+            #print(pi)
+            #probs=np.exp(pi)
+            #print(probs)
+            #probs=probs/np.sum(probs)
+            #print(probs)
+            best_act=np.random.choice(7,p=pi)
 
-            examples.append([deepcopy(self.game.state),self.game.player,deepcopy(pi)])
+            self.game.play(best_act)
             r = self.game.end(self.game.state,self.game.player)
             if r!=-2:
                 if toprint:
@@ -45,23 +41,27 @@ class selfplay():
                     ---------------------------------------------------------------------
                     ---------------------------------------------------------------------
                     """)
-                return [[x[0]*x[1] for x in examples], [r*self.game.player*x[1] for x in examples], [x[2] for x in examples]] 
-            self.game.play(best_act)
+                return [[x[0]*x[1] for x in examples], [r*self.game.player*x[1] for x in examples], [x[2] for x in examples]]
+
+            examples.append([deepcopy(self.game.state),self.game.player,deepcopy(pi)])
     
-    def learn(self, toprint=False):
+    def learn(self,game,nn,cput,num,batch,toprint=False):
+        self.game=game
+        self.nn=nn
+        self.cput=cput
+        self.num=num
+        self.batch=batch
+        self.mcts=Mcts(self.game,self.nn,self.cput,self.num)
         X, Y1, Y2 = [],[],[]
         for _ in range(self.batch):
+            print("batch",_)
             x,y1,y2=self.play(toprint)
-            x.pop()
-            y1.pop()
-            y2.pop()
             X+=x
             Y1+=y1
             Y2+=y2
-            self.game.state=np.zeros((6,7))
-            self.game.player=1
-        #print(X)
-        #print(Y1)
-        #print(Y2)
-        self.nn.train(X,Y1,Y2)
-        #self.nn.contender_vs_champion()
+            # for i in range(len(X)):
+            #     print(X[i])
+            #     print(Y1[i])
+            #     print(Y2[i])
+            
+        self.nn.train(X,Y1,Y2,3)
